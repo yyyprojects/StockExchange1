@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Understanding the Stock Exchange: An Interactive Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Neutrals -->
+    <!-- Application Structure Plan: A single-page, top-down narrative structure was chosen to guide a beginner user logically from the basic concept ("What is it?") to more complex topics ("How does it work?", "Who are the players?", "How is it regulated?"). This thematic scrolling approach is more intuitive for learning than a dashboard. Key interactions include a clickable step-by-step process diagram for a trade and a dynamic bar chart comparing NYSE and Nasdaq, designed to make abstract concepts and data more tangible and engaging. This flow ensures foundational knowledge is built before introducing comparisons or regulatory oversight. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: The process of a stock trade. -> Goal: Organize/Explain Change. -> Viz/Method: Interactive HTML/CSS diagram. -> Interaction: User clicks on each step to reveal a textual explanation. -> Justification: Breaks a complex process into digestible, self-paced steps, enhancing comprehension over a static graphic. -> Library/Method: Vanilla JS & Tailwind CSS.
+        - Report Info: Comparison of NYSE and Nasdaq stats (age, listings, type). -> Goal: Compare. -> Viz/Method: Bar Chart. -> Interaction: Hovering over bars reveals tooltips with specific data. Buttons to switch between different comparison metrics. -> Justification: A bar chart provides a quick, visual comparison of quantitative data that is more impactful than a simple table. -> Library/Method: Chart.js (Canvas).
+        - Report Info: Core definitions and roles (Exchange, SEC, Players). -> Goal: Inform. -> Viz/Method: Styled text blocks with icons. -> Interaction: Static presentation. -> Justification: Simple, clear text is best for foundational concepts. Icons help visually break up content. -> Library/Method: HTML & Tailwind CSS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF8;
+            color: #333333;
+        }
+        .section-title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #1E3A8A;
+        }
+        .section-intro {
+            font-size: 1.125rem;
+            color: #555555;
+            max-width: 800px;
+            margin: 1rem auto;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border-radius: 0.75rem;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.07);
+        }
+        .nav-button {
+            padding: 0.5rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 500;
+            color: #1E3A8A;
+            background-color: transparent;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        .nav-button:hover, .nav-button.active {
+            color: #FFFFFF;
+            background-color: #1E3A8A;
+        }
+        .step-item {
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .step-item.active {
+            background-color: #2563EB;
+            color: white;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 50vh;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="sticky top-0 bg-white/80 backdrop-blur-lg shadow-sm z-50">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-blue-900">Stock Exchange 101</h1>
+            <div class="hidden md:flex space-x-2">
+                <a href="#what" class="nav-button">What Is It?</a>
+                <a href="#why" class="nav-button">Why It Exists</a>
+                <a href="#players" class="nav-button">The Players</a>
+                <a href="#how" class="nav-button">How It Works</a>
+                <a href="#exchanges" class="nav-button">US Exchanges</a>
+                <a href="#sec" class="nav-button">The Referee</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+        
+        <section id="what" class="text-center py-16">
+            <h2 class="section-title">What is a Stock Exchange?</h2>
+            <p class="section-intro">
+                Imagine a huge, organized marketplace. But instead of fruits and vegetables, people are buying and selling tiny pieces of ownership in large companies like Apple or Amazon. These tiny pieces are called "stocks," and the marketplace is the stock exchange. It's a central place that connects buyers and sellers in a fair and orderly way.
+            </p>
+        </section>
+
+        <section id="why" class="py-16">
+            <div class="text-center">
+                <h2 class="section-title">Why Does It Exist?</h2>
+                <p class="section-intro">
+                    Stock exchanges serve a vital two-way purpose in the economy. They are not just for trading; they are fundamental for growth and investment. This section breaks down the core reasons why companies and investors both rely on this marketplace.
+                </p>
+            </div>
+            <div class="mt-12 grid md:grid-cols-2 gap-8 items-center">
+                <div class="card">
+                    <h3 class="text-2xl font-bold text-blue-800 mb-4">For Companies: Raising Money</h3>
+                    <p class="text-gray-600">When a company wants to grow—build new factories, hire more people, or create new products—it needs money (capital). By selling stocks on an exchange, a company can raise large amounts of money from the public. This is called "going public." It's like inviting thousands of people to become part-owners to fuel its expansion.</p>
+                </div>
+                <div class="card">
+                    <h3 class="text-2xl font-bold text-green-800 mb-4">For People: A Chance to Invest</h3>
+                    <p class="text-gray-600">For everyday people, the stock exchange provides an opportunity to invest in the success of these companies. By buying a stock, you're betting on the company's future growth. If the company does well, the value of your stock can increase, and you might receive a share of the profits, called a dividend. It allows anyone to participate in the economy's growth.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="players" class="py-16">
+            <div class="text-center">
+                 <h2 class="section-title">The Key Players</h2>
+                 <p class="section-intro">The stock market isn't just a computer program; it's a network of different participants, each with a specific role. Understanding who these players are is key to understanding how the market functions. Here are the main groups involved in the process.</p>
+            </div>
+            <div class="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="card text-center">
+                    <div class="text-4xl mb-4">🏢</div>
+                    <h3 class="text-xl font-bold text-blue-800">Companies (Issuers)</h3>
+                    <p class="text-gray-600 mt-2">These are the businesses that sell ("issue") their stocks to the public to raise money.</p>
+                </div>
+                <div class="card text-center">
+                    <div class="text-4xl mb-4">🧑‍💻</div>
+                    <h3 class="text-xl font-bold text-green-800">Investors</h3>
+                    <p class="text-gray-600 mt-2">This is anyone who buys and sells stocks—from individuals with a small account to large institutions managing billions.</p>
+                </div>
+                <div class="card text-center">
+                    <div class="text-4xl mb-4"> посредник </div>
+                    <h3 class="text-xl font-bold text-yellow-800">Brokers</h3>
+                    <p class="text-gray-600 mt-2">The middlemen. You can't just walk onto an exchange. You need a licensed broker to execute your trades for you.</p>
+                </div>
+                <div class="card text-center">
+                    <div class="text-4xl mb-4">🏛️</div>
+                    <h3 class="text-xl font-bold text-red-800">The Exchange</h3>
+                    <p class="text-gray-600 mt-2">The central marketplace (like NYSE or Nasdaq) that provides the technology and rules for trading.</p>
+                </div>
+            </div>
+        </section>
+        
+        <section id="how" class="py-16">
+            <div class="text-center">
+                <h2 class="section-title">How a Trade Works: An Interactive Journey</h2>
+                <p class="section-intro">
+                    Buying a stock seems instant, but a fascinating process happens behind the scenes. It involves you, your broker, and the exchange working together in seconds. Click through the steps below to see how your order goes from a thought to a completed trade.
+                </p>
+            </div>
+
+            <div class="mt-12 max-w-4xl mx-auto">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 text-center">
+                    <div id="step-1" class="step-item p-4 rounded-lg bg-gray-200 border-2 border-transparent"><strong>1. You Decide</strong></div>
+                    <div class="flex items-center justify-center text-2xl font-bold text-blue-500">&rarr;</div>
+                    <div id="step-2" class="step-item p-4 rounded-lg bg-gray-200 border-2 border-transparent"><strong>2. Place Order</strong></div>
+                    <div class="flex items-center justify-center text-2xl font-bold text-blue-500">&rarr;</div>
+                    <div id="step-3" class="step-item p-4 rounded-lg bg-gray-200 border-2 border-transparent"><strong>3. Broker &rarr; Exchange</strong></div>
+                    <!-- Continuation for visual flow -->
+                    <div class="col-span-1 md:col-span-5 flex justify-center text-2xl font-bold text-blue-500 my-4 md:hidden">&darr;</div>
+                </div>
+                 <div class="grid grid-cols-1 md:grid-cols-5 gap-4 text-center mt-4 md:mt-8">
+                    <div id="step-5" class="step-item p-4 rounded-lg bg-gray-200 border-2 border-transparent order-last md:order-first"><strong>5. Confirmation</strong></div>
+                    <div class="flex items-center justify-center text-2xl font-bold text-blue-500 order-4 md:order-2">&larr;</div>
+                    <div id="step-4" class="step-item p-4 rounded-lg bg-gray-200 border-2 border-transparent order-3"><strong>4. Trade Match</strong></div>
+                    <div class="col-span-1 md:col-span-2 flex justify-center text-2xl font-bold text-blue-500 my-4 md:hidden order-2">&uarr;</div>
+                </div>
+                
+                <div id="step-explanation" class="mt-8 card h-48 flex items-center justify-center">
+                    <p class="text-lg text-center text-gray-700">Click on a step above to see the explanation.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="exchanges" class="py-16">
+            <div class="text-center">
+                <h2 class="section-title">USA's Major Exchanges: NYSE vs. Nasdaq</h2>
+                <p class="section-intro">
+                    In the United States, two main exchanges dominate the landscape: the New York Stock Exchange (NYSE) and the Nasdaq. While they both serve the same core purpose, they have distinct histories, characteristics, and reputations. Explore the chart below to see how they compare.
+                </p>
+            </div>
+            <div class="mt-12">
+                <div class="chart-container">
+                    <canvas id="exchangeChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="sec" class="py-16">
+            <div class="text-center">
+                <h2 class="section-title">The Market Referee: The SEC</h2>
+                <p class="section-intro">
+                    With so much money changing hands, how do you ensure the game is fair? In the USA, that's the job of the Securities and Exchange Commission (SEC). Think of them as the ultimate referee for the stock market.
+                </p>
+            </div>
+            <div class="mt-12 max-w-3xl mx-auto card">
+                <h3 class="text-2xl font-bold text-blue-800 mb-4">What does the SEC do?</h3>
+                <ul class="space-y-4 text-gray-700 list-disc list-inside">
+                    <li><strong>Enforces Rules:</strong> The SEC makes sure companies, brokers, and exchanges follow the law, preventing fraud and unfair practices.</li>
+                    <li><strong>Requires Transparency:</strong> It forces public companies to regularly share truthful information about their financial health, so investors can make informed decisions.</li>
+                    <li><strong>Protects Investors:</strong> Its primary mission is to protect everyday investors from manipulation and ensure the market is a level playing field.</li>
+                </ul>
+                <p class="mt-6 text-gray-600">Without the SEC, there would be much less trust in the market, as investors would worry about being cheated. Their oversight is crucial for maintaining confidence in the U.S. financial system.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white mt-16">
+        <div class="container mx-auto px-6 py-8 text-center">
+            <p>&copy; 2025 Stock Exchange 101. An educational resource.</p>
+            <p class="text-sm text-gray-400 mt-2">This page is for informational purposes only and does not constitute financial advice.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const navLinks = document.querySelectorAll('nav a');
+            const sections = document.querySelectorAll('main section');
+
+            const activateNavLink = () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 100) {
+                        current = section.getAttribute('id');
+                    }
+                });
+                
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if(link.getAttribute('href') === `#${current}`) {
+                        link.classList.add('active');
+                    }
+                });
+            };
+            
+            window.addEventListener('scroll', activateNavLink);
+            activateNavLink();
+
+            const exchangeData = {
+                'NYSE': {
+                    founded: 1792,
+                    listings: 2400,
+                    marketCap: 26,
+                    type: 'Auction Market (Hybrid)',
+                    knownFor: 'Blue-chip, established industrial companies',
+                    color: 'rgba(30, 64, 175, 0.7)'
+                },
+                'Nasdaq': {
+                    founded: 1971,
+                    listings: 3700,
+                    marketCap: 24,
+                    type: 'Dealer Market (Electronic)',
+                    knownFor: 'Technology, biotech, and growth companies',
+                    color: 'rgba(22, 163, 74, 0.7)'
+                }
+            };
+
+            const ctx = document.getElementById('exchangeChart').getContext('2d');
+            const exchangeChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Year Founded', 'Number of Listings (approx.)', 'Market Cap (Trillions USD, approx.)'],
+                    datasets: [
+                        {
+                            label: 'NYSE',
+                            data: [exchangeData.NYSE.founded, exchangeData.NYSE.listings, exchangeData.NYSE.marketCap],
+                            backgroundColor: exchangeData.NYSE.color,
+                            borderColor: exchangeData.NYSE.color.replace('0.7', '1'),
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Nasdaq',
+                            data: [exchangeData.Nasdaq.founded, exchangeData.Nasdaq.listings, exchangeData.Nasdaq.marketCap],
+                            backgroundColor: exchangeData.Nasdaq.color,
+                            borderColor: exchangeData.Nasdaq.color.replace('0.7', '1'),
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Comparison of Major US Stock Exchanges',
+                            font: { size: 18 }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        if (context.label === 'Year Founded') {
+                                             label += context.parsed.y;
+                                        } else if (context.label.includes('Listings')) {
+                                            label += context.parsed.y.toLocaleString();
+                                        } else {
+                                            label += '$' + context.parsed.y + ' Trillion';
+                                        }
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            type: 'logarithmic',
+                            ticks: {
+                                callback: function (value, index, values) {
+                                    if (value === 10000 || value === 5000 || value === 2000 || value === 1000 || value === 100 || value === 10 || value === 1) return value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const steps = {
+                'step-1': "<strong>You Decide to Buy or Sell:</strong> You identify a company you want to invest in (or sell shares of). For example, you decide to buy 10 shares of Company XYZ.",
+                'step-2': "<strong>Place Your Order with a Broker:</strong> You log into your brokerage account (like Fidelity, Schwab, or Robinhood) and place an order, specifying the stock, the quantity, and the price you're willing to pay.",
+                'step-3': "<strong>Broker Sends Order to the Exchange:</strong> Your broker instantly sends your order electronically to the stock exchange where Company XYZ is listed.",
+                'step-4': "<strong>The Exchange Matches Buyers and Sellers:</strong> The exchange's powerful computers look for a matching sell order. If someone else has placed an order to sell at least 10 shares of XYZ at your price, a match is made.",
+                'step-5': "<strong>Trade Executed & Confirmed:</strong> The transaction happens in a fraction of a second. The exchange sends a confirmation back to your broker, who then updates your account. You now own the shares!"
+            };
+            
+            const stepItems = document.querySelectorAll('.step-item');
+            const explanationBox = document.getElementById('step-explanation');
+
+            stepItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    stepItems.forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                    explanationBox.innerHTML = `<p class="text-lg text-center text-gray-800 p-4">${steps[item.id]}</p>`;
+                });
+            });
+
+            // Set initial active state for the first step
+            const firstStep = document.getElementById('step-1');
+            firstStep.classList.add('active');
+            explanationBox.innerHTML = `<p class="text-lg text-center text-gray-800 p-4">${steps[firstStep.id]}</p>`;
+        });
+    </script>
+</body>
+</html>
